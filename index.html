@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Reviews</title>
+</head>
+<body style="margin: 0; font-family: Arial, sans-serif; background-color: #121212; color: #ffffff;">
+  <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    <header style="text-align: center; padding: 20px 0; background: linear-gradient(90deg, #e50914, #b81d24); color: #ffffff;">
+      <h1 style="font-size: 2.5rem; margin: 0;">Movie Review Database</h1>
+    </header>
+    <main>
+      <div class="search-bar" style="text-align: center; margin: 30px 0;">
+        <input id="search" type="text" placeholder="Search movies..." 
+          style="width: 80%; max-width: 600px; padding: 15px; font-size: 18px; border: none; border-radius: 30px; background-color: #282828; color: #ffffff; outline: none;" 
+          oninput="fetchMovies()">
+      </div>
+      <div class="form-container" style="margin: 30px auto; background-color: #282828; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+        <h2 style="margin-top: 0; color: #e50914;">Add a New Movie</h2>
+        <form id="movie-form" onsubmit="addMovie(event)">
+          <input type="text" id="title" placeholder="Title" required 
+            style="width: 100%; margin: 10px 0; padding: 15px; font-size: 16px; border: none; border-radius: 5px; background-color: #383838; color: #ffffff;">
+          <textarea id="description" placeholder="Description" required 
+            style="width: 100%; margin: 10px 0; padding: 15px; font-size: 16px; border: none; border-radius: 5px; background-color: #383838; color: #ffffff;"></textarea>
+          <input type="number" id="rating" placeholder="Rating (0-10)" required 
+            style="width: 100%; margin: 10px 0; padding: 15px; font-size: 16px; border: none; border-radius: 5px; background-color: #383838; color: #ffffff;">
+          <button type="submit" 
+            style="width: 100%; margin: 10px 0; padding: 15px; font-size: 16px; border: none; border-radius: 5px; background-color: #e50914; color: #ffffff; cursor: pointer; font-weight: bold; transition: background-color 0.3s ease;"
+            onmouseover="this.style.backgroundColor='#b81d24';" onmouseout="this.style.backgroundColor='#e50914';">
+            Add Movie
+          </button>
+        </form>
+      </div>
+      <div id="movie-list" class="movie-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 30px;"></div>
+    </main>
+    <footer style="text-align: center; padding: 20px 0; background-color: #1f1f1f; color: #bbbbbb; margin-top: 50px;">
+      <p>&copy; 2025 Movie Review Database</p>
+    </footer>
+  </div>
+
+  <script>
+    async function fetchMovies() {
+      const search = document.getElementById('search').value;
+      const response = await fetch(`/movies?search=${search}`);
+      const movies = await response.json();
+      const movieList = document.getElementById('movie-list');
+      movieList.innerHTML = '';
+
+      movies.forEach(movie => {
+        const movieCard = `
+          <div class="movie-card" style="background-color: #282828; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease, box-shadow 0.3s ease;"
+               onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 8px 16px rgba(0, 0, 0, 0.4)';" 
+               onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 8px rgba(0, 0, 0, 0.2)';">
+            <h2 style="margin: 0 0 10px; color: #e50914; font-size: 1.5rem;">${movie.title}</h2>
+            <p style="color: #cccccc; margin: 10px 0; font-size: 1rem;">${movie.description}</p>
+            <span style="color: #ffaa00; font-weight: bold; font-size: 1.2rem;">Rating: ${movie.rating}</span>
+          </div>
+        `;
+        movieList.innerHTML += movieCard;
+      });
+    }
+
+    async function addMovie(event) {
+      event.preventDefault();
+      const title = document.getElementById('title').value;
+      const description = document.getElementById('description').value;
+      const rating = document.getElementById('rating').value;
+
+      await fetch('/movies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description, rating })
+      });
+
+      document.getElementById('movie-form').reset();
+      fetchMovies();
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchMovies);
+  </script>
+</body>
+</html>
